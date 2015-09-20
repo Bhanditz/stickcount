@@ -1,0 +1,7 @@
+test.list
+test.lmdb/
+test/
+training.list
+training.lmdb/
+training/
+soln_*
