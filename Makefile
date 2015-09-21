@@ -2,7 +2,7 @@ CAFFE_BUILD ?= "/path/to/caffe/build"
 
 .PHONY: all clean data lists db solve
 
-all: clean data lists db solve
+all: clean data lists db mean solve
 
 data:
 	python maketraining.py
@@ -16,6 +16,11 @@ lists:
 db: cleandb
 	for dir in training test; do \
 		$(CAFFE_BUILD)/tools/convert_imageset -gray -shuffle ./ $$dir.list $$dir.lmdb; \
+	done
+
+mean:
+	for dir in training test; do \
+		$(CAFFE_BUILD)/tools/compute_image_mean $$dir.lmdb $$dir\_mean.binaryproto; \
 	done
 
 solve:

@@ -9,6 +9,8 @@ layer {
   }
   transform_param {
     scale: 0.00390625
+    mean_file: "training_mean.binaryproto"
+    mirror: true
   }
   data_param {
     source: "training.lmdb"
@@ -26,6 +28,7 @@ layer {
   }
   transform_param {
     scale: 0.00390625
+    mean_file: "test_mean.binaryproto"
   }
   data_param {
     source: "test.lmdb"
