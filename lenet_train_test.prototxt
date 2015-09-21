@@ -1,6 +1,6 @@
 name: "LeNet"
 layer {
-  name: "mnist"
+  name: "sticks"
   type: "Data"
   top: "data"
   top: "label"
@@ -8,7 +8,7 @@ layer {
     phase: TRAIN
   }
   transform_param {
-    scale: 0.015625
+    scale: 0.00390625
   }
   data_param {
     source: "training.lmdb"
@@ -17,7 +17,7 @@ layer {
   }
 }
 layer {
-  name: "mnist"
+  name: "sticks"
   type: "Data"
   top: "data"
   top: "label"
@@ -25,7 +25,7 @@ layer {
     phase: TEST
   }
   transform_param {
-    scale: 0.015625
+    scale: 0.00390625
   }
   data_param {
     source: "test.lmdb"
