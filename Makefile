@@ -1,4 +1,4 @@
-CAFFE_BUILD := "/path/to/caffe/build"
+CAFFE_BUILD ?= "/path/to/caffe/build"
 
 .PHONY: all clean data lists db solve
 
