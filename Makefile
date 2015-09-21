@@ -27,4 +27,4 @@ cleandb:
 
 clean:
 	rm -rf test* training*
-	rm *.caffemodel *.solverstate
+	rm -rf *.caffemodel *.solverstate
