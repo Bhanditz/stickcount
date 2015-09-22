@@ -1,7 +1,6 @@
-test.list
-test.lmdb/
+*.lmdb
+*.binaryproto
+*.list
 test/
-training.list
-training.lmdb/
 training/
 soln_*
