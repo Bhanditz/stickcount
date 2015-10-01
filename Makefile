@@ -1,4 +1,4 @@
-CAFFE_BUILD ?= "/path/to/caffe/build"
+CAFFE_BUILD ?= "/usr/local/caffe"
 
 .PHONY: all clean data lists db solve
 
@@ -15,16 +15,16 @@ lists:
 
 db: cleandb
 	for dir in training test; do \
-		$(CAFFE_BUILD)/tools/convert_imageset -gray -shuffle ./ $$dir.list $$dir.lmdb; \
+		$(CAFFE_BUILD)/bin/convert_imageset -gray -shuffle ./ $$dir.list $$dir.lmdb; \
 	done
 
 mean:
 	for dir in training test; do \
-		$(CAFFE_BUILD)/tools/compute_image_mean $$dir.lmdb $$dir\_mean.binaryproto; \
+		$(CAFFE_BUILD)/bin/compute_image_mean $$dir.lmdb $$dir\_mean.binaryproto; \
 	done
 
 solve:
-	$(CAFFE_BUILD)/tools/caffe train -solver lenet_solver.prototxt
+	$(CAFFE_BUILD)/bin/caffe train -solver lenet_solver.prototxt
 
 
 cleandb:
