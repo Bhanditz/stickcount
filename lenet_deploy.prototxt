@@ -1,40 +1,10 @@
 name: "LeNet"
-layer {
-  name: "sticks"
-  type: "Data"
-  top: "data"
-  top: "label"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    scale: 0.00390625
-    mean_file: "training_mean.binaryproto"
-    mirror: true
-  }
-  data_param {
-    source: "training.lmdb"
-    batch_size: 128
-    backend: LMDB
-  }
-}
-layer {
-  name: "sticks"
-  type: "Data"
-  top: "data"
-  top: "label"
-  include {
-    phase: TEST
-  }
-  transform_param {
-    scale: 0.00390625
-    mean_file: "test_mean.binaryproto"
-  }
-  data_param {
-    source: "test.lmdb"
-    batch_size: 100
-    backend: LMDB
-  }
+input: "data"
+input_shape {
+  dim: 10
+  dim: 1
+  dim: 28
+  dim: 28
 }
 layer {
   name: "conv1"
@@ -153,19 +123,8 @@ layer {
   }
 }
 layer {
-  name: "accuracy"
-  type: "Accuracy"
-  bottom: "ip2"
-  bottom: "label"
-  top: "accuracy"
-  include {
-    phase: TEST
-  }
-}
-layer {
   name: "loss"
-  type: "SoftmaxWithLoss"
+  type: "Softmax"
   bottom: "ip2"
-  bottom: "label"
   top: "loss"
 }
