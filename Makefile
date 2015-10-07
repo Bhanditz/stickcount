@@ -1,4 +1,4 @@
-CAFFE_BUILD ?= "/usr/local/caffe"
+CAFFE_HOME ?= "/usr/local/caffe"
 
 .PHONY: all clean data lists db solve
 
@@ -17,7 +17,7 @@ lists:
 db: cleandb
 	for dir in training test; do \
             echo converting $$dir; \
-	    $(CAFFE_BUILD)/bin/convert_imageset -gray -shuffle ./ \
+	    $(CAFFE_HOME)/bin/convert_imageset -gray -shuffle ./ \
               $$dir.list $$dir.lmdb 2>&1 \
             | awk -v E=$$(tput el) 'BEGIN { ORS="\r" } { print E, $$0 }'; \
             echo; \
@@ -25,11 +25,11 @@ db: cleandb
 
 mean:
 	for dir in training test; do \
-		$(CAFFE_BUILD)/bin/compute_image_mean $$dir.lmdb $$dir\_mean.binaryproto; \
+		$(CAFFE_HOME)/bin/compute_image_mean $$dir.lmdb $$dir\_mean.binaryproto; \
 	done
 
 solve:
-	$(CAFFE_BUILD)/bin/caffe train -solver lenet_solver.prototxt
+	$(CAFFE_HOME)/bin/caffe train -solver lenet_solver.prototxt
 
 status:
 	python status.py
