@@ -19,15 +19,21 @@ def read_mean_proto(filename):
   return np.array(caffe.io.blobproto_to_array(blob))
 
 def prediction_for_images(filenames):
-  input_images = [caffe.io.load_image(f)[:,:,0:1] for f in filenames]
+  input_images = [caffe.io.load_image(f, color=False) for f in filenames]
   return net.predict(input_images)
 
 def prediction_for_image(filename):
   return predcition_for_images([filename])[0]
 
+mean = read_mean_proto(MEAN_FILE)
+print "Mean shape is", mean.shape
+print "Mean first plane shape is", mean[0][0].shape
+
 net = caffe.Classifier(MODEL_FILE, PRETRAINED,
-                       mean = read_mean_proto(MEAN_FILE)[0],
-                       raw_scale=255,
+                       # When loaded, the mean file is 1x1x28x28, but we want
+                       # just 28x28.  This accomplishes that.
+                       mean = mean[0][0],
+                       raw_scale=256,
                        image_dims=(28, 28))
 
 IMAGE_DIR = 'test'
@@ -111,7 +117,7 @@ output.append('<p>Total: %d correct out of %d, accuracy %.2f</p>' %
   (correct, total, correct / float(total)))
 output.append('</body></html>')
 
-PORT = 8800
+PORT = 8880
 
 class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   def do_GET(self):

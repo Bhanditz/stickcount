@@ -39,8 +39,8 @@ def genimages(prefix, stickcount, samples):
     f = filename(prefix, stickcount, x)
     if not os.path.exists(os.path.dirname(f)):
       os.makedirs(os.path.dirname(f))
-    im.save(filename(prefix, stickcount, x), "JPEG", quality=80, optimize=True)
-    # im.save(filename(prefix, stickcount, x), "PNG")
+    # im.save(filename(prefix, stickcount, x), "JPEG", quality=80, optimize=True)
+    im.save(filename(prefix, stickcount, x), "PNG")
 
 for s in xrange(0, 5):
   genimages('training', s, training)

@@ -1,7 +1,7 @@
 name: "LeNet"
 input: "data"
 input_shape {
-  dim: 10
+  dim: 1
   dim: 1
   dim: 28
   dim: 28
