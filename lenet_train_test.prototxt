@@ -28,7 +28,8 @@ layer {
   }
   transform_param {
     scale: 0.00390625
-    mean_file: "test_mean.binaryproto"
+    # mean_file: "test_mean.binaryproto"
+    mean_file: "training_mean.binaryproto"
   }
   data_param {
     source: "test.lmdb"

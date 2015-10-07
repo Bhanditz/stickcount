@@ -9,8 +9,8 @@ import SimpleHTTPServer
 import SocketServer
 
 MODEL_FILE = 'lenet_deploy.prototxt'
-PRETRAINED = 'soln_iter_10000.caffemodel'
-MEAN_FILE = 'test_mean.binaryproto'
+PRETRAINED = 'soln_iter_20000.caffemodel'
+MEAN_FILE = 'training_mean.binaryproto'
 
 def read_mean_proto(filename):
   blob = caffe.proto.caffe_pb2.BlobProto()
@@ -53,8 +53,13 @@ samples = 4
 # Now pick the first 4 samples of each hit/mistake in the grid
 hits = {}
 counts = {}
+total = 0
+correct = 0
 for j in range(len(all_files)):
   slot = (truth[j], prediction[j].argmax())
+  total += 1
+  if slot[0] == slot[1]:
+    correct += 1
   if slot not in hits:
     hits[slot] = []
   if len(hits[slot]) < samples:
@@ -64,9 +69,11 @@ for j in range(len(all_files)):
 output = ['<!doctype html><html><head>']
 output.append("""
 <style>
-table { 
+table, body {
   color: #333;
   font-family: Helvetica, Arial, sans-serif;
+}
+table { 
   border-collapse: collapse;
   border-spacing: 0; 
 }
@@ -100,6 +107,8 @@ for c in cats:
     output.append('</td>')
   output.append('</tr>')
 output.append('</table>')
+output.append('<p>Total: %d correct out of %d, accuracy %.2f</p>' %
+  (correct, total, correct / float(total)))
 output.append('</body></html>')
 
 PORT = 8800

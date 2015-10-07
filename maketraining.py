@@ -28,8 +28,8 @@ def genimages(prefix, stickcount, samples):
   im = Image.new('L', (dim, dim), 'white')
   draw = ImageDraw.Draw(im) 
   for x in xrange(samples):
-    # im.paste(random.randrange(50, 256), (0, 0, dim, dim))
-    im.paste('white', (0, 0, dim, dim))
+    im.paste(random.randrange(230, 256), (0, 0, dim, dim))
+    # im.paste('white', (0, 0, dim, dim))
     lines = makelines(stickcount)
     for line in lines:
       w = random.randrange(1, 7)
