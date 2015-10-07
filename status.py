@@ -1,10 +1,12 @@
+#!/usr/bin/env python
+
 from os import listdir
 from os.path import isfile, isdir, join
 import numpy as np
 import sys
 import caffe
-# import matplotlib.pyplot as plt
-import pylab as plt
+import SimpleHTTPServer
+import SocketServer
 
 MODEL_FILE = 'lenet_deploy.prototxt'
 PRETRAINED = 'soln_iter_10000.caffemodel'
@@ -43,8 +45,9 @@ for c in categories:
 cats = sorted(cats)
 
 prediction = prediction_for_images(all_files)
-for j in range(len(all_files)):
-  print all_files[j], prediction[j]
+# This prints all predictions
+# for j in range(len(all_files)):
+#   print all_files[j], prediction[j]
 
 samples = 4
 # Now pick the first 4 samples of each hit/mistake in the grid
@@ -99,8 +102,6 @@ for c in cats:
 output.append('</table>')
 output.append('</body></html>')
 
-import SimpleHTTPServer
-import SocketServer
 PORT = 8800
 
 class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
@@ -112,4 +113,8 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 server = SocketServer.TCPServer(("",PORT), MyRequestHandler)
 print "serving at http://localhost:%d" % PORT
-server.serve_forever()
+try:
+  server.serve_forever()
+except KeyboardInterrupt:
+  pass
+server.server_close()

@@ -2,7 +2,7 @@ CAFFE_BUILD ?= "/usr/local/caffe"
 
 .PHONY: all clean data lists db solve
 
-all: clean data lists db mean solve
+all: clean data lists db mean solve status
 
 data:
 	python maketraining.py
@@ -10,12 +10,17 @@ data:
 lists:
 	for dir in training test; do \
 	    find $$dir -name *.jpg -or -name *.png \
-		    | awk 'BEGIN { FS = "/" }; { print $$0" "$$2 }' > $$dir.list; \
+		    | awk 'BEGIN { FS = "/" }; { print $$0" "$$2 }' \
+	            > $$dir.list; \
 	done
 
 db: cleandb
 	for dir in training test; do \
-		$(CAFFE_BUILD)/bin/convert_imageset -gray -shuffle ./ $$dir.list $$dir.lmdb; \
+            echo converting $$dir; \
+	    $(CAFFE_BUILD)/bin/convert_imageset -gray -shuffle ./ \
+              $$dir.list $$dir.lmdb 2>&1 \
+            | awk -v E=$$(tput el) 'BEGIN { ORS="\r" } { print E, $$0 }'; \
+            echo; \
 	done
 
 mean:
@@ -26,6 +31,8 @@ mean:
 solve:
 	$(CAFFE_BUILD)/bin/caffe train -solver lenet_solver.prototxt
 
+status:
+	python status.py
 
 cleandb:
 	rm -rf training.lmdb test.lmdb

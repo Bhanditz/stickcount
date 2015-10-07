@@ -5,7 +5,7 @@ import random
 import os, os.path
 
 dim = 28
-training = 10000
+training = 20000
 test = 100
 
 
@@ -16,18 +16,26 @@ def filename(prefix, stickcount, samplenum):
   return "%s/%d/%s_%d_%d.jpg" % (
       prefix, stickcount, prefix, stickcount, samplenum)
 
+def makelines(count):
+  x = sorted([randloc() for _ in xrange(count * 2)])
+  x = random.sample(x[:count], count) + random.sample(x[count:], count)
+  x = [[x[j], x[j + count]] for j in xrange(count)]
+  y = sorted([randloc() for _ in xrange(count * 2)])
+  y = [random.sample(y[j * 2:j * 2 + 2], 2) for j in xrange(count)]
+  return [(x[j][0], y[j][0], x[j][1], y[j][1]) for j in xrange(count)]
+
 def genimages(prefix, stickcount, samples):
   im = Image.new('L', (dim, dim), 'white')
   draw = ImageDraw.Draw(im) 
   for x in xrange(samples):
-    im.paste(random.randrange(50, 256), (0, 0, dim, dim))
-    # im.paste('white', (0, 0, dim, dim))
-    for y in xrange(stickcount):
+    # im.paste(random.randrange(50, 256), (0, 0, dim, dim))
+    im.paste('white', (0, 0, dim, dim))
+    lines = makelines(stickcount)
+    for line in lines:
       w = random.randrange(1, 7)
-      p = (randloc(), randloc(), randloc(), randloc())
       c = random.randrange(0, 200)
       # c = 'black'
-      draw.line(p, fill=c, width=w)
+      draw.line(line, fill=c, width=w)
     f = filename(prefix, stickcount, x)
     if not os.path.exists(os.path.dirname(f)):
       os.makedirs(os.path.dirname(f))

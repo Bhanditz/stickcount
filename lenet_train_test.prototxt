@@ -14,7 +14,7 @@ layer {
   }
   data_param {
     source: "training.lmdb"
-    batch_size: 128
+    batch_size: 100
     backend: LMDB
   }
 }
