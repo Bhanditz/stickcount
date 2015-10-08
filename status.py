@@ -25,16 +25,9 @@ def prediction_for_images(filenames):
 def prediction_for_image(filename):
   return predcition_for_images([filename])[0]
 
-mean = read_mean_proto(MEAN_FILE)
-print "Mean shape is", mean.shape
-print "Mean first plane shape is", mean[0][0].shape
+# mean = read_mean_proto(MEAN_FILE)
 
-net = caffe.Classifier(MODEL_FILE, PRETRAINED,
-                       # When loaded, the mean file is 1x1x28x28, but we want
-                       # just 28x28.  This accomplishes that.
-                       mean = mean[0][0],
-                       raw_scale=256,
-                       image_dims=(28, 28))
+net = caffe.Classifier(MODEL_FILE, PRETRAINED, image_dims=(28, 28))
 
 IMAGE_DIR = 'test'
 
@@ -126,6 +119,7 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       return
     return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
+SocketServer.TCPServer.allow_reuse_address = True
 server = SocketServer.TCPServer(("",PORT), MyRequestHandler)
 print "serving at http://localhost:%d" % PORT
 try:

@@ -24,7 +24,7 @@ db: cleandb
 	done
 
 mean:
-	for dir in training test; do \
+	for dir in training; do \
 		$(CAFFE_HOME)/bin/compute_image_mean $$dir.lmdb $$dir\_mean.binaryproto; \
 	done
 
