@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
+import caffe
+import glob
+import numpy as np
 from os import listdir
 from os.path import isfile, isdir, join
-import numpy as np
 import sys
-import caffe
 import SimpleHTTPServer
 import SocketServer
 
+IMAGE_DIR = 'test'
 MODEL_FILE = 'lenet_deploy.prototxt'
-PRETRAINED = 'soln_iter_20000.caffemodel'
-MEAN_FILE = 'training_mean.binaryproto'
+PRETRAINED = 'soln_iter_*.caffemodel'
 
 def read_mean_proto(filename):
   blob = caffe.proto.caffe_pb2.BlobProto()
@@ -18,97 +19,116 @@ def read_mean_proto(filename):
   blob.ParseFromString(data)
   return np.array(caffe.io.blobproto_to_array(blob))
 
-def prediction_for_images(filenames):
-  input_images = [caffe.io.load_image(f, color=False) for f in filenames]
-  return net.predict(input_images)
+import re
 
-def prediction_for_image(filename):
-  return predcition_for_images([filename])[0]
+def tryint(s):
+  try:
+    return int(s)
+  except:
+    return s
 
-# mean = read_mean_proto(MEAN_FILE)
+def alphanum_key(s):
+  return [tryint(c) for c in re.split('([0-9]+)', s)]
 
-net = caffe.Classifier(MODEL_FILE, PRETRAINED, image_dims=(28, 28))
+def load_images_in_dir(imagedir):
+  # Run the net on all test images from all categories
+  categories = [d for d in listdir(imagedir) if isdir(join(imagedir, d))]
+  all_files = []
+  truth = []
+  cats = []
+  for c in categories:
+    cat_files = [join(IMAGE_DIR, c, f) for f in listdir(join(IMAGE_DIR, c))]
+    all_files.extend(cat_files)
+    truth.extend([int(c)] * len(cat_files))
+    cats.append(int(c))
+  cats = sorted(cats)
+  bits = [caffe.io.load_image(f, color=False) for f in all_files]
+  return [all_files, bits, truth, cats]
 
-IMAGE_DIR = 'test'
+def calc_eval_for_model(model, pretrained, cases):
+  [all_files, bits, truth, cats] = cases
+  net = caffe.Classifier(model, pretrained, image_dims=(64, 64))
+  prediction = net.predict(bits)
+  samples = 4
+  # Now pick the first 4 samples of each hit/mistake in the grid
+  hits = {}
+  counts = {}
+  total = 0
+  correct = 0
+  for j in range(len(all_files)):
+    slot = (truth[j], prediction[j].argmax())
+    total += 1
+    if slot[0] == slot[1]:
+      correct += 1
+    if slot not in hits:
+      hits[slot] = []
+    if len(hits[slot]) < samples:
+      hits[slot].append(all_files[j])
+    counts[slot] = counts.get(slot, 0) + 1
+  return [hits, counts, correct, total]
 
-# Run the net on all test images from all categories
-categories = [d for d in listdir(IMAGE_DIR) if isdir(join(IMAGE_DIR, d))]
-all_files = []
-truth = []
-cats = []
-for c in categories:
-  cat_files = [join(IMAGE_DIR, c, f) for f in listdir(join(IMAGE_DIR, c))]
-  all_files.extend(cat_files)
-  truth.extend([int(c)] * len(cat_files))
-  cats.append(int(c))
-cats = sorted(cats)
+output = []
+def output_start():
+  output.append('<!doctype html><html><head>')
+  output.append("""
+  <style>
+  table, body {
+    color: #333;
+    font-family: Helvetica, Arial, sans-serif;
+  }
+  table { 
+    border-collapse: collapse;
+    border-spacing: 0; 
+  }
+  
+  td, th { border: 1px solid #CCC; padding: 2px; }
+  td {
+    text-align: left;
+  }
+  </style>
+  """)
+  output.append('</head><body>')
 
-prediction = prediction_for_images(all_files)
-# This prints all predictions
-# for j in range(len(all_files)):
-#   print all_files[j], prediction[j]
-
-samples = 4
-# Now pick the first 4 samples of each hit/mistake in the grid
-hits = {}
-counts = {}
-total = 0
-correct = 0
-for j in range(len(all_files)):
-  slot = (truth[j], prediction[j].argmax())
-  total += 1
-  if slot[0] == slot[1]:
-    correct += 1
-  if slot not in hits:
-    hits[slot] = []
-  if len(hits[slot]) < samples:
-    hits[slot].append(all_files[j])
-  counts[slot] = counts.get(slot, 0) + 1
-
-output = ['<!doctype html><html><head>']
-output.append("""
-<style>
-table, body {
-  color: #333;
-  font-family: Helvetica, Arial, sans-serif;
-}
-table { 
-  border-collapse: collapse;
-  border-spacing: 0; 
-}
-
-td, th { border: 1px solid #CCC; padding: 2px; }
-td {
-  text-align: left;
-}
-</style>
-""")
-output.append('</head><body>')
-output.append('<table>')
-output.append('<tr>')
-output.append('<td></td>')
-for d in cats:
-  output.append('<td>predicted %d</td>' % d)
-output.append('</tr>')
-for c in cats:
+def output_table(filename, eval, cases):
+  [hits, counts, correct, total] = eval
+  [all_files, bits, truth, cats] = cases
+  output.append('<h3>%s</h3>' % filename)
+  output.append('<table>')
   output.append('<tr>')
-  output.append('<td>actually %d</td>' % c)
+  output.append('<td></td>')
   for d in cats:
-    if c == d:
-      border = 'lightgreen'
-    else:
-      border = 'transparent'
-    output.append('<td style="background:%s">' % border)
-    if (c, d) in hits:
-      for f in hits[(c, d)]:
-        output.append('<img src="%s">' % f)
-      output.append(str(counts[(c, d)]))
-    output.append('</td>')
+    output.append('<td>predicted %d</td>' % d)
   output.append('</tr>')
-output.append('</table>')
-output.append('<p>Total: %d correct out of %d, accuracy %.2f</p>' %
-  (correct, total, correct / float(total)))
-output.append('</body></html>')
+  for c in cats:
+    output.append('<tr>')
+    output.append('<td>actually %d</td>' % c)
+    for d in cats:
+      if c == d:
+        border = 'lightgreen'
+      else:
+        border = 'transparent'
+      output.append('<td style="background:%s">' % border)
+      if (c, d) in hits:
+        for f in hits[(c, d)]:
+          output.append('<img src="%s">' % f)
+        output.append(str(counts[(c, d)]))
+      output.append('</td>')
+    output.append('</tr>')
+  output.append('</table>')
+  output.append('<p>Total: %d correct out of %d, accuracy %.2f</p>' %
+    (correct, total, correct / float(total)))
+  output.append('<hr>')
+
+def output_finish():
+  output.append('</body></html>')
+
+images = load_images_in_dir(IMAGE_DIR)
+output_start()
+pretraineds = sorted(glob.glob(PRETRAINED), key=alphanum_key)
+for p in pretraineds:
+  eval = calc_eval_for_model(MODEL_FILE, p, images)
+  output_table(p, eval, images)
+output_finish()
 
 PORT = 8880
 

@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw
 import random
 import os, os.path
 
-dim = 28
+dim = 64
 training = 20000
 test = 100
 
