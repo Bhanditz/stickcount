@@ -2,7 +2,7 @@ CAFFE_HOME ?= "/usr/local/caffe"
 
 .PHONY: all clean data lists db solve
 
-all: clean data lists db mean solve status
+all: clean data lists db solve status
 
 data:
 	python maketraining.py
